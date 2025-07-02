@@ -2,10 +2,10 @@ local M = {}
 
 function M.open(opts)
 	opts = opts or {}
-	local cmd = opts.cmd or M.opts.cmd or "pypath"
+	local base_cmd = opts.cmd or M.opts.cmd or "pypath"
+	local cmd = "PYPATH_MODE=neovim " .. base_cmd
 
-	local cols = vim.o.columns
-	local lines = vim.o.lines
+	local cols, lines = vim.o.columns, vim.o.lines
 	local width = math.floor(cols * 0.8)
 	local height = math.floor(lines * 0.8)
 	local row = math.floor((lines - height) / 2)
@@ -24,11 +24,22 @@ function M.open(opts)
 
 	vim.fn.termopen(cmd, {
 		on_exit = function()
-			vim.schedule(function()
-				if vim.api.nvim_win_is_valid(win) then
-					vim.api.nvim_win_close(win, true)
+			if vim.api.nvim_win_is_valid(win) then
+				vim.api.nvim_win_close(win, true)
+			end
+
+			local cache = vim.fn.expand("~/.pypath_last")
+			if vim.fn.filereadable(cache) == 1 then
+				local lines = vim.fn.readfile(cache)
+				vim.fn.delete(cache)
+
+				local file = lines[1] or ""
+				file = file:gsub("\r", ""):gsub("\n", ""):gsub("^%s+", ""):gsub("%s+$", "")
+
+				if #file > 0 then
+					vim.cmd("edit " .. vim.fn.fnameescape(file))
 				end
-			end)
+			end
 		end,
 	})
 
@@ -43,9 +54,11 @@ function M.setup(opts)
 		open_cmd = "Pypath",
 		key = "<leader>pp",
 	}, opts or {})
+
 	vim.api.nvim_create_user_command(M.opts.open_cmd, function()
 		M.open()
-	end, {})
+	end, { nargs = 0 })
+
 	keymaps.init(M.opts)
 end
 
