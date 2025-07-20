@@ -7,12 +7,14 @@
 - Open pypath in a floating terminal window.
 - Seamless integration with Neovim 0.5+ built-in terminal.
 
-## LazyVim
-```
+## Installation
+
+### [lazy.nvim](https://github.com/folke/lazy.nvim)
+```lua
   {
     "g0at1/pypath.nvim",
     config = function()
       require("pypath").setup()
     end,
-  },
+  }
 ```
