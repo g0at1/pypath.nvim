@@ -3,6 +3,13 @@ local M = {}
 function M.open(opts)
 	opts = opts or {}
 	local base_cmd = opts.cmd or M.opts.cmd or "pypath"
+	if vim.fn.executable(base_cmd) == 0 then
+		vim.notify(
+			string.format("Command '%s' not installed.\nPlease visit https://github.com/g0at/pypath", base_cmd),
+			vim.log.levels.WARN
+		)
+		return
+	end
 	local cmd = "PYPATH_MODE=neovim " .. base_cmd
 
 	local cols, lines = vim.o.columns, vim.o.lines
